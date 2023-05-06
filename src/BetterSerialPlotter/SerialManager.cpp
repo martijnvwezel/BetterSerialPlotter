@@ -7,12 +7,12 @@
 
 namespace bsp{
 
-SerialManager::SerialManager(BSP* gui_): 
+SerialManager::SerialManager(BSP* gui_):
     Widget(gui_),
     serial_port()
     {}
 
-SerialManager::SerialManager(): 
+SerialManager::SerialManager():
     serial_port()
     {}
 
@@ -36,6 +36,8 @@ void SerialManager::render(){
     ImGui::BeginChild("SerialSetup", ImVec2(-1, 36), false, padding_flag);
     // comport selection
     ImGui::PushItemWidth(200);
+
+
     if (ImGui::BeginCombo("##comport_select", ("Serial Port: " + ((comport_valid()) ? get_port_name(comport_num) : "")).c_str())){
         auto port_names = get_serial_ports();
         for (int i = 0; i < port_names.size(); i++){
@@ -55,7 +57,7 @@ void SerialManager::render(){
     ImGui::PopStyleColor();
     ImGui::PopStyleColor();
     ImGui::SameLine();
-    
+
     // baud rate select
     ImGui::PushItemWidth(200);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, (baud_rate > 0) ? (baud_status ? gui->PalleteGreen : gui->PalleteRed) : gui->PalleteGray);
@@ -108,7 +110,7 @@ bool SerialManager::begin_serial(){
         std::thread read_thread( [this] { read_serial(); } );
         read_thread.detach();
     }
-    
+
     return serial_started;
 }
 
@@ -120,11 +122,11 @@ void SerialManager::close_serial(){
 
 void SerialManager::reset_read(){
     std::lock_guard<std::mutex> lock(mtx);
-    curr_line_buff.clear();                              
+    curr_line_buff.clear();
     gui->PrintBuffer.clear();
-    gui->all_data.clear();       
+    gui->all_data.clear();
     gui->mutexed_all_data.clear();
-    
+
     read_once = false;
 }
 
@@ -133,7 +135,7 @@ void SerialManager::read_serial(){
     while(serial_started){
         int BytesRead = 0;
         static unsigned char message[packet_size];
-        
+
         do{
             BytesRead = serial_port.receive_data(message, packet_size);
             // if we got something from serial, parse it, and indicate that serial is functioning
@@ -154,7 +156,7 @@ void SerialManager::parse_buffer(unsigned char* buff, size_t buff_len){
     for (size_t i = 0; i < buff_len; i++){
         // if we got a newline character, (0x0a)
         if (buff[i] == 0x0a){
-            // if we haven't run through once, just note that, and 
+            // if we haven't run through once, just note that, and
             // then return to make sure we have clean data
             if (!read_once){
                 read_once = true;
@@ -218,7 +220,7 @@ std::vector<float> SerialManager::parse_line(std::string line){
             // if (gui->verbose) std::cout << "invalid number: " << number << "\n";
         }
     }
-    
+
     return curr_data;
 }
 
@@ -230,7 +232,7 @@ std::string SerialManager::get_port_name(BspPort port_num){
 #else
     if (port_num >= 16 && port_num <= 21){
         return "ttyUSB" + std::to_string(port_num - 16);
-    } 
+    }
     else if (port_num >= 24 && port_num <= 25){
         return "ttyACM" + std::to_string(port_num - 24);
     }

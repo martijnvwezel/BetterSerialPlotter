@@ -19,7 +19,7 @@ public:
     // variables related to the current state of the serial port
     // int  comport_num    = -1;    // serial port number selected (this is related to enums from SerialPort class in mahi-com)
                                  // -1 indicates that there is not comport num selected yet
-    int  baud_rate      = 9600;  // baud rate selected
+    int  baud_rate      = 256000;  // baud rate selected
     std::atomic<bool> serial_started = false; // indicates whether serial prot has been successfully opened
     std::atomic<bool> baud_status    = false; // indicates whether or not the serial port is consistently reading good data at this baud rate
     std::atomic<bool> serial_status  = false; // indicates that the program is able to receive any information from the serial port
@@ -28,12 +28,12 @@ public:
     std::string        curr_line_buff;   // string representing the current analyzed line
 
     std::mutex mtx; // mutex so that data can be shared when in the serial_manager thread
-    
+
     bool read_once    = false; // marks whether we have read through data at least once
     int cycles_waited = 0;     // number of cycles waited since a valid read, for timeouts
-    int cycle_timeout = 5000;    //  how many cycles to wait before showing a timeout
+    int cycle_timeout = 1024*64;//5000;    //  how many cycles to wait before showing a timeout
 
-    
+
     static constexpr int packet_size = 1024;
 
     // abstracted serial port object for windows/mac/linux
@@ -43,7 +43,7 @@ public:
     SerialManager(BSP* gui_);
     /// default constructor for serialization
     SerialManager();
-    /// copy constructor. this importantly creates a default SerialPort, 
+    /// copy constructor. this importantly creates a default SerialPort,
     /// and only copies over comport_num and baud_rate
     SerialManager(const SerialManager& serial_manager);
     /// assignment operator. only copies over comport_num and baud_rate
@@ -92,9 +92,11 @@ private:
                                    57600,
                                    115200,
                                    128000,
-                                   256000};
-    
-    
+                                   256000,
+                                   921600,
+                                   1000000};
+
+
 };
 
 } // namespace bsp
